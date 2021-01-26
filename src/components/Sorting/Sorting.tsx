@@ -1,6 +1,6 @@
 import { Box, Button, Flex } from "@chakra-ui/react";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
@@ -22,7 +22,6 @@ const Sorting = () => {
     }
     setItems(newArray);
     setMax(maxNumber);
-    console.log(items.length);
   };
   useEffect(() => {
     handleChangeAmountOfItems(10);
@@ -30,37 +29,54 @@ const Sorting = () => {
 
   const calculateHeight = (value: number) => {
     const percentage = (value / max) * 100;
-    const str = percentage.toString() + "%";
-    console.log(str);
-    return str;
+
+    return percentage.toString() + "%";
   };
+  const calculateWidth = useCallback(() => {
+    const percentage = 100 / currentAmount;
+    console.log(percentage);
+    return percentage.toString() + "%";
+  }, [currentAmount]);
+
   return (
-    <Box>
+    <Box px={"8rem"}>
+      <Box>
+        <Button onClick={() => handleChangeAmountOfItems()}>
+          Randomize Array
+        </Button>
+      </Box>
       <Box>
         Set Number:
         <Button onClick={() => handleChangeAmountOfItems(10)}>10</Button>
         <Button onClick={() => handleChangeAmountOfItems(100)}>100</Button>
         {/* <Button onClick={() => handleChangeAmountOfItems(1000)}>1000</Button> */}
       </Box>
-      <Flex border={"1px solid black"} minH={200}>
+      <Flex minH={200}>
         {items.map((item, idx) => (
-          <Flex key={idx} h={"500px"} alignItems={"flex-end"}>
+          <Flex
+            key={idx}
+            h="500px"
+            w={calculateWidth()}
+            alignItems={"flex-end"}
+          >
             <Box
               bg="teal.300"
-              mx={1}
-              px={3}
+              // mx={1}
+              // px={3}
+              mx={currentAmount > 50 ? "0.1rem" : "0.5rem"}
               h={calculateHeight(item)}
+              w="100%"
               pos="relative"
             >
               <Box
                 pos="absolute"
                 bottom="-2rem"
                 left="0%"
-                w={"100%"}
                 textAlign="center"
-                fontSize="0.75rem"
+                w="100%"
+                fontSize={currentAmount > 50 ? "0.5rem" : "0.75rem"}
               >
-                {item}
+                {currentAmount < 50 && item}
               </Box>
             </Box>
           </Flex>
