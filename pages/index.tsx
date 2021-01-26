@@ -1,3 +1,10 @@
+import Sorting from "../src/components/Sorting/Sorting";
+import * as React from "react";
+
 export default function Home() {
-  return <div></div>;
+  return (
+    <div>
+      <Sorting />
+    </div>
+  );
 }

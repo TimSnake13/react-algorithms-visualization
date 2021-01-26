@@ -1,5 +1,6 @@
 import "../styles/globals.css";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, theme } from "@chakra-ui/react";
+import * as React from "react";
 
 const colors = {
   brand: {
