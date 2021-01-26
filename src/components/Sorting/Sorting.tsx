@@ -1,6 +1,6 @@
 import { Box, Button, Flex } from "@chakra-ui/react";
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
@@ -23,21 +23,37 @@ const Sorting = () => {
     setItems(newArray);
     setMax(maxNumber);
   };
-  useEffect(() => {
-    handleChangeAmountOfItems(10);
-  }, []);
 
   const calculateHeight = (value: number) => {
     const percentage = (value / max) * 100;
-
     return percentage.toString() + "%";
   };
   const calculateWidth = useCallback(() => {
     const percentage = 100 / currentAmount;
-    console.log(percentage);
     return percentage.toString() + "%";
   }, [currentAmount]);
 
+  const [looping, setLooping] = useState(false);
+  const loopingRef = useRef(looping);
+  loopingRef.current = looping;
+
+  const toggleLoop = () => {
+    setLooping((current) => !current);
+  };
+  const runAlgorithm = useCallback(() => {
+    // Using ref = always up to date
+    if (loopingRef.current) {
+      // ******   Run Algorithm   *******
+      console.log("Looping");
+    }
+
+    setTimeout(runAlgorithm, 1000);
+  }, []);
+
+  useEffect(() => {
+    handleChangeAmountOfItems(10);
+    runAlgorithm();
+  }, []);
   return (
     <Box px={"8rem"}>
       <Box>
@@ -82,6 +98,11 @@ const Sorting = () => {
           </Flex>
         ))}
       </Flex>
+      <Box mt="5rem">
+        <Button onClick={() => toggleLoop()}>
+          {looping ? "Stop" : "Start"}
+        </Button>
+      </Box>
     </Box>
   );
 };
