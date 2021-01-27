@@ -2,6 +2,7 @@ import * as React from "react";
 import { useSpring, animated, useSprings } from "react-spring";
 import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import DataColumn from "./DataColumn";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
@@ -74,6 +75,7 @@ const Sorting = () => {
 
   useEffect(() => {
     handleChangeAmountOfItems(10);
+    setTimeout(() => setToggle(true), 1000);
     runAlgorithm();
   }, []);
 
@@ -85,7 +87,6 @@ const Sorting = () => {
   // }));
   const [toggle, setToggle] = useState(false);
   const props = useSpring({ opacity: toggle ? 1 : 0 });
-  const AnimatedBox = animated(Box);
 
   return (
     <Box px={"8rem"}>
@@ -112,30 +113,15 @@ const Sorting = () => {
         </Box>
         <Flex flexDirection="row" h="500px">
           {items.map((item, idx) => (
-            <AnimatedBox key={idx} style={props} w={calculateWidth()}>
-              <Flex alignItems={"flex-end"} h="100%" w="100%">
-                <Box
-                  bg="teal.200"
-                  mx={currentAmount > 50 ? "0.1rem" : "0.5rem"}
-                  h={calculateHeight(item)}
-                  w="100%"
-                  maxW={"2rem"}
-                  pos="relative"
-                  boxShadow="0px 2px 40px #00000020, 0px 2px 5px #00000030"
-                >
-                  <Box
-                    pos="absolute"
-                    bottom="-2rem"
-                    left="0%"
-                    w="100%"
-                    textAlign="center"
-                    fontSize={currentAmount > 50 ? "0.5rem" : "0.75rem"}
-                  >
-                    {currentAmount < 50 && item}
-                  </Box>
-                </Box>
-              </Flex>
-            </AnimatedBox>
+            <DataColumn
+              key={idx}
+              idx={idx}
+              toggle={toggle}
+              calculateWidth={calculateWidth}
+              currentAmount={currentAmount}
+              calculateHeight={calculateHeight}
+              item={item}
+            />
           ))}
         </Flex>
       </Flex>
