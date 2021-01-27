@@ -2,6 +2,13 @@ import { useSpring, animated, useSprings } from "react-spring";
 import * as React from "react";
 import { Box, Flex } from "@chakra-ui/react";
 
+export enum columnType {
+  Current,
+  CompareTo,
+  Sorted,
+  Default,
+}
+
 interface Props {
   idx: number;
   toggle: boolean;
@@ -9,6 +16,7 @@ interface Props {
   currentAmount: number;
   calculateHeight: (value: number) => string;
   item: number;
+  type: columnType;
 }
 const DataColumn = ({
   idx,
@@ -17,6 +25,7 @@ const DataColumn = ({
   currentAmount,
   calculateHeight,
   item,
+  type,
 }: Props) => {
   const props = useSpring({
     height: "100%",
@@ -24,6 +33,19 @@ const DataColumn = ({
     delay: idx * 25,
   });
   const AnimatedBox = animated(Box);
+  const assignBg = () => {
+    switch (type) {
+      case columnType.Current:
+        return "purple.400";
+      case columnType.CompareTo:
+        return "yellow.400";
+      case columnType.Sorted:
+        return "green.200";
+      case columnType.Default:
+      default:
+        return "blue.200";
+    }
+  };
   return (
     <>
       <Box w={calculateWidth()} h="100%">
@@ -44,13 +66,15 @@ const DataColumn = ({
             <AnimatedBox
               style={props}
               w="100%"
-              bg="teal.200"
+              //   bg="teal.200"
+              bg={assignBg()}
               boxShadow="0px 2px 40px #00000020, 0px 2px 5px #00000030"
             ></AnimatedBox>
           </Flex>
           <Box
             pos="absolute"
-            bottom="-2rem"
+            bottom="0.75rem"
+            fontWeight="700"
             left="50%"
             transform="translateX(-50%)"
             w="100%"

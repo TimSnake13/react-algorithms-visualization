@@ -2,7 +2,7 @@ import * as React from "react";
 import { useSpring, animated, useSprings } from "react-spring";
 import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import DataColumn from "./DataColumn";
+import DataColumn, { columnType } from "./DataColumn";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
@@ -73,6 +73,23 @@ const Sorting = () => {
     setTimeout(runAlgorithm, 1000);
   }, []);
 
+  const assignColor = (index: number, op: Operation) => {
+    switch (index) {
+      case op.current:
+        return columnType.Current;
+      case op.compareTo:
+        return columnType.CompareTo;
+      default:
+        if (
+          op.sorted !== undefined &&
+          op.sorted.find((value) => value === index)
+        ) {
+          return columnType.Sorted;
+        } else return columnType.Default;
+    }
+  };
+  const currentOp: Operation = { current: 0, compareTo: 1, sorted: [9] };
+
   useEffect(() => {
     handleChangeAmountOfItems(10);
     setTimeout(() => setToggle(true), 1000);
@@ -121,6 +138,7 @@ const Sorting = () => {
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
               item={item}
+              type={assignColor(idx, currentOp)}
             />
           ))}
         </Flex>
