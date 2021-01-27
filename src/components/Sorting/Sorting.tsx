@@ -1,5 +1,6 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
 import * as React from "react";
+import { useSpring, animated, useSprings } from "react-spring";
+import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const Sorting = () => {
@@ -40,11 +41,32 @@ const Sorting = () => {
   const toggleLoop = () => {
     setLooping((current) => !current);
   };
+  const [selectedIdx, setSelectedIdx] = useState<Operation[]>([]);
   const runAlgorithm = useCallback(() => {
     // Using ref = always up to date
     if (loopingRef.current) {
       // ******   Run Algorithm   *******
       console.log("Looping");
+
+      // ******   Insertion Sort   *******
+      const operations = [];
+      let n = items.length;
+      for (let i = 1; i < n; i++) {
+        // Choosing the first element in our unsorted subarray
+        let current = items[i];
+        // The last element of our sorted subarray
+        let j = i - 1;
+        while (j > -1 && current < items[j]) {
+          items[j + 1] = items[j];
+          j--;
+        }
+        items[j + 1] = current;
+      }
+      // * Operations:
+      // * 1. Selection
+      // * 2. Compare
+      // * 3. Switch position or not
+      // * Repeat 1.
     }
 
     setTimeout(runAlgorithm, 1000);
@@ -54,11 +76,25 @@ const Sorting = () => {
     handleChangeAmountOfItems(10);
     runAlgorithm();
   }, []);
+
+  // const [props, set] = useSpring(() => ({
+  //   to: async (next, cancel) => {
+  //     await next({ height: "500px" });
+  //   },
+  //   from: { height: "0px" },
+  // }));
+  const [toggle, setToggle] = useState(false);
+  const props = useSpring({ opacity: toggle ? 1 : 0 });
+  const AnimatedBox = animated(Box);
+
   return (
     <Box px={"8rem"}>
       <Box>
         <Button onClick={() => handleChangeAmountOfItems()}>
           Randomize Array
+        </Button>
+        <Button onClick={() => setToggle((current) => !current)}>
+          TToggle
         </Button>
       </Box>
       <Box>
@@ -67,44 +103,50 @@ const Sorting = () => {
         <Button onClick={() => handleChangeAmountOfItems(100)}>100</Button>
         {/* <Button onClick={() => handleChangeAmountOfItems(1000)}>1000</Button> */}
       </Box>
-      <Flex minH={200}>
-        {items.map((item, idx) => (
-          <Flex
-            key={idx}
-            h="500px"
-            w={calculateWidth()}
-            alignItems={"flex-end"}
-          >
-            <Box
-              bg="teal.300"
-              // mx={1}
-              // px={3}
-              mx={currentAmount > 50 ? "0.1rem" : "0.5rem"}
-              h={calculateHeight(item)}
-              w="100%"
-              pos="relative"
-            >
-              <Box
-                pos="absolute"
-                bottom="-2rem"
-                left="0%"
-                textAlign="center"
-                w="100%"
-                fontSize={currentAmount > 50 ? "0.5rem" : "0.75rem"}
-              >
-                {currentAmount < 50 && item}
-              </Box>
-            </Box>
-          </Flex>
-        ))}
+      <Flex minH={200} flexDirection="column">
+        <Progress hasStripe value={64} h={5} w={"100%"} />
+        <Box mb="5rem">
+          <Button onClick={() => toggleLoop()}>
+            {looping ? "Stop" : "Start"}
+          </Button>
+        </Box>
+        <Flex flexDirection="row" h="500px">
+          {items.map((item, idx) => (
+            <AnimatedBox key={idx} style={props} w={calculateWidth()}>
+              <Flex alignItems={"flex-end"} h="100%" w="100%">
+                <Box
+                  bg="teal.200"
+                  mx={currentAmount > 50 ? "0.1rem" : "0.5rem"}
+                  h={calculateHeight(item)}
+                  w="100%"
+                  maxW={"2rem"}
+                  pos="relative"
+                  boxShadow="0px 2px 40px #00000020, 0px 2px 5px #00000030"
+                >
+                  <Box
+                    pos="absolute"
+                    bottom="-2rem"
+                    left="0%"
+                    w="100%"
+                    textAlign="center"
+                    fontSize={currentAmount > 50 ? "0.5rem" : "0.75rem"}
+                  >
+                    {currentAmount < 50 && item}
+                  </Box>
+                </Box>
+              </Flex>
+            </AnimatedBox>
+          ))}
+        </Flex>
       </Flex>
-      <Box mt="5rem">
-        <Button onClick={() => toggleLoop()}>
-          {looping ? "Stop" : "Start"}
-        </Button>
-      </Box>
     </Box>
   );
+};
+
+type Operation = {
+  current: number;
+  compareTo: number;
+  sorted?: number[];
 };
 
 export default Sorting;
