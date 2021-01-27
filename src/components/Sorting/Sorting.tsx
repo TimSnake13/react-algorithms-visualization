@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import DataColumn, { columnType } from "./DataColumn";
 
 const Sorting = () => {
+  // const [sceneReady, setSceneReady] = useState(false);
+  const sceneReadyRef = useRef(false);
   const [items, setItems] = useState<number[]>([]);
   const [currentAmount, setCurrentAmount] = useState(10);
   const [max, setMax] = useState(100);
@@ -88,11 +90,24 @@ const Sorting = () => {
         } else return columnType.Default;
     }
   };
-  const currentOp: Operation = { current: 0, compareTo: 1, sorted: [9] };
+
+  const [opsIdx, setOpsIdx] = useState(0);
+  const ops: Operation[] = [
+    { current: 0, compareTo: 1, sorted: [9] },
+    { current: 0, compareTo: 2, sorted: [9] },
+  ];
+  useEffect(() => {
+    console.log(opsIdx);
+    console.log(ops[opsIdx]);
+  }, [opsIdx]);
 
   useEffect(() => {
     handleChangeAmountOfItems(10);
-    setTimeout(() => setToggle(true), 1000);
+    setTimeout(() => {
+      setToggle(true);
+      // setSceneReady(true);
+      sceneReadyRef.current = !sceneReadyRef.current;
+    }, 1000);
     runAlgorithm();
   }, []);
 
@@ -103,7 +118,6 @@ const Sorting = () => {
   //   from: { height: "0px" },
   // }));
   const [toggle, setToggle] = useState(false);
-  const props = useSpring({ opacity: toggle ? 1 : 0 });
 
   return (
     <Box px={"8rem"}>
@@ -111,9 +125,7 @@ const Sorting = () => {
         <Button onClick={() => handleChangeAmountOfItems()}>
           Randomize Array
         </Button>
-        <Button onClick={() => setToggle((current) => !current)}>
-          TToggle
-        </Button>
+        <Button onClick={() => setToggle((current) => !current)}>Toggle</Button>
       </Box>
       <Box>
         Set Number:
@@ -124,11 +136,28 @@ const Sorting = () => {
       <Flex minH={200} flexDirection="column">
         <Progress hasStripe value={64} h={5} w={"100%"} />
         <Box mb="5rem">
+          <Button
+            disabled={opsIdx - 1 < 0}
+            onClick={() => setOpsIdx((state) => state - 1)}
+          >
+            Previous Step
+          </Button>
           <Button onClick={() => toggleLoop()}>
             {looping ? "Stop" : "Start"}
           </Button>
+          <Button
+            disabled={opsIdx + 1 > ops.length}
+            onClick={() => setOpsIdx((state) => state + 1)}
+          >
+            Next Step
+          </Button>
         </Box>
-        <Flex flexDirection="row" h="500px">
+        <Flex
+          flexDirection="row"
+          h="500px"
+          // overflow={"hidden"}
+          overflow={sceneReadyRef.current ? "inherit" : "hidden"}
+        >
           {items.map((item, idx) => (
             <DataColumn
               key={idx}
@@ -138,7 +167,7 @@ const Sorting = () => {
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
               item={item}
-              type={assignColor(idx, currentOp)}
+              type={assignColor(idx, ops[opsIdx])}
             />
           ))}
         </Flex>
