@@ -2,24 +2,24 @@ import { useSpring, animated } from "react-spring";
 import * as React from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useState } from "react";
-import { columnType, horizontalMovementType, Operation } from "../../types";
+import { columnType, horizontalMovementType, Operation } from "./types";
 
 interface BoxProps {
   idx: number;
   bg: string;
   flowing: boolean;
   toggle: boolean;
-  type: columnType;
+  colType: columnType;
 }
 
-const AnimatedBox = ({ idx, bg, flowing, toggle, type }: BoxProps) => {
+const AnimatedBox = ({ idx, bg, flowing, toggle, colType }: BoxProps) => {
   const [delay, setDelay] = useState(idx * 25);
 
   const props = useSpring({
     width: "100%",
     height: "100%",
     transform: `perspective(600px) translate3d(0,
-    ${type === columnType.Current ? "120%" : "0%"}, 0) 
+    ${colType === columnType.Current ? "120%" : "0%"}, 0) 
     scale(${flowing ? 1.2 : 1})`,
     delay: delay,
     backgroundColor: bg,
@@ -85,7 +85,7 @@ interface DataColumnProps {
   currentAmount: number;
   calculateHeight: (value: number) => string;
   item: number;
-  type: (index: number, op: Operation) => columnType;
+  colType: (index: number, op: Operation) => columnType;
   horizontalMovement: (_idx: number, op: Operation) => horizontalMovementType;
 }
 const DataColumn = ({
@@ -96,7 +96,7 @@ const DataColumn = ({
   currentAmount,
   calculateHeight,
   item,
-  type,
+  colType,
   horizontalMovement,
 }: DataColumnProps) => {
   // const flowingRef = useRef(false);
@@ -104,7 +104,7 @@ const DataColumn = ({
 
   const w = calculateWidth();
   const hm = horizontalMovement(idx, currentOp);
-  const t = type(idx, currentOp);
+  const t = colType(idx, currentOp);
   const assignBg = () => {
     switch (t) {
       case columnType.Current:
@@ -135,16 +135,14 @@ const DataColumn = ({
             w="100%"
             h={calculateHeight(item)}
             maxW={"2rem"}
-            onClick={() => {
-              setFlowing((s) => !s);
-            }}
+            onClick={() => setFlowing((s) => !s)}
           >
             <AnimatedBox
               bg={assignBg()}
               flowing={flowing}
               idx={idx}
               toggle={toggle}
-              type={t}
+              colType={t}
             ></AnimatedBox>
           </Flex>
           <Box

@@ -3,22 +3,20 @@ import { useSpring, animated, useSprings } from "react-spring";
 import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DataColumn from "./DataColumn";
-import { columnType, horizontalMovementType, Operation } from "../../types";
+import { columnType, horizontalMovementType, Operation } from "./types";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
   const [currentAmount, setCurrentAmount] = useState(10);
   const [max, setMax] = useState(100);
-  const handleChangeAmountOfItems = (num?: number) => {
-    if (num) setCurrentAmount(num);
-    else num = currentAmount;
+  const handleChangeAmountOfItems = (num: number) => {
+    setCurrentAmount(num);
 
     const maxNumber = num * 10;
 
     let i = 1;
     const newArray = [];
-    for (;;) {
-      if (i > num) break;
+    while (i <= num) {
       const newItem = Math.floor(Math.random() * maxNumber) + 1;
       newArray.push(newItem);
       i++;
@@ -67,7 +65,7 @@ const Sorting = () => {
 
       // ******   Run Algorithm   *******
       // console.log("Looping");
-      var nextLoop;
+      let nextLoop;
       if (!(idxRef.current + 1 > operations.length - 1)) {
         setOpsIdx((_idx) =>
           _idx + 1 > operations.length - 1 ? _idx : _idx + 1
@@ -129,7 +127,7 @@ const Sorting = () => {
   return (
     <Box px={"8rem"}>
       <Box>
-        <Button onClick={() => handleChangeAmountOfItems()}>
+        <Button onClick={() => handleChangeAmountOfItems(currentAmount)}>
           Randomize Array
         </Button>
         <Button onClick={() => setToggle((state) => !state)}>Toggle</Button>
@@ -190,7 +188,7 @@ const Sorting = () => {
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
               // type={assignColumnType(idx, operations[opsIdx])}
-              type={assignColumnType}
+              colType={assignColumnType}
               // horizontalMovement={assignHorizontalMovement(
               //   idx,
               //   operations[opsIdx]

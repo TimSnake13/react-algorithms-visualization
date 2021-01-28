@@ -11,11 +11,11 @@ export enum horizontalMovementType {
   Right,
 }
 
-export type Operation = {
+export interface Operation {
   current?: number;
   compareTo?: number;
   sorted?: number[];
   moveLeft?: number;
   moveRight?: number;
   array: number[];
-};
+}
