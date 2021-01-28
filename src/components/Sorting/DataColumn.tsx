@@ -1,8 +1,8 @@
-import { useSpring, animated, interpolate } from "react-spring";
+import { useSpring, animated } from "react-spring";
 import * as React from "react";
 import { Box, Flex } from "@chakra-ui/react";
-import { useRef, useState } from "react";
-import { columnType, horizontalMovementType } from "../../types";
+import { useState } from "react";
+import { columnType, horizontalMovementType, Operation } from "../../types";
 
 interface BoxProps {
   idx: number;
@@ -10,37 +10,15 @@ interface BoxProps {
   flowing: boolean;
   toggle: boolean;
   type: columnType;
-  horizontalMovement: horizontalMovementType;
 }
 
-const AnimatedBox = ({
-  idx,
-  bg,
-  flowing,
-  toggle,
-  type,
-  horizontalMovement,
-}: BoxProps) => {
+const AnimatedBox = ({ idx, bg, flowing, toggle, type }: BoxProps) => {
   const [delay, setDelay] = useState(idx * 25);
-  let skipNextAnimation = false;
-  const [skip, setSkip] = useState(false);
-  const assignHorizontalMovement = () => {
-    switch (horizontalMovement) {
-      case horizontalMovementType.Left:
-        skipNextAnimation = true;
-        return "-150%";
-      case horizontalMovementType.Right:
-        skipNextAnimation = true;
-        return "150%";
-      default:
-        skipNextAnimation = false;
-        return "0%";
-    }
-  };
+
   const props = useSpring({
     width: "100%",
     height: "100%",
-    transform: `perspective(600px) translate3d(${assignHorizontalMovement()},
+    transform: `perspective(600px) translate3d(0,
     ${type === columnType.Current ? "120%" : "0%"}, 0) 
     scale(${flowing ? 1.2 : 1})`,
     delay: delay,
@@ -50,10 +28,7 @@ const AnimatedBox = ({
       : "0px 0px 0px #00000020, 0px 0px 0px #00000030",
     onRest: () => {
       setDelay(0);
-      if (skipNextAnimation) setSkip(true);
-      else setSkip(false);
     },
-    immediate: skip,
   });
 
   return <animated.div style={props} />;
@@ -63,27 +38,60 @@ interface HABoxProps {
   children: any;
   w: string;
   h: string;
+  horizontalMovement: horizontalMovementType;
 }
 
-const HABox = ({ children, w, h }: HABoxProps) => {
+const HABox = ({ children, w, h, horizontalMovement }: HABoxProps) => {
+  const [skipNext, setSkipNext] = useState(false);
+  const [skip, setSkip] = useState(false);
+  // const assignHorizontalMovement = () => {
+  //   switch (horizontalMovement) {
+  //     case horizontalMovementType.Left:
+  //       setSkipNext(true);
+  //       return "-150%";
+  //     case horizontalMovementType.Right:
+  //       setSkipNext(true);
+  //       return "150%";
+  //     default:
+  //       setSkipNext(false);
+  //       return "0%";
+  //   }
+  // };
   // const HABox = animated(Box);
+  const props = useSpring({
+    width: w,
+    height: h,
+    // transform: `translateX(${assignHorizontalMovement()})`,
+    // onRest: () => {
+    //   // console.log("skipNextAnimation? :" + skipNext);
+    //   if (skipNext) {
+    //     setSkip(true);
+    //     setSkipNext(false);
+    //   } else {
+    //     setSkip(false);
+    //   }
+    // },
+    // immediate: skip,
+  });
 
-  return <animated.div style={{ width: w, height: h }} children={children} />;
+  return <animated.div style={props} children={children} />;
 };
 
 interface DataColumnProps {
   idx: number;
   toggle: boolean;
+  currentOp: Operation;
   calculateWidth: () => string;
   currentAmount: number;
   calculateHeight: (value: number) => string;
   item: number;
-  type: columnType;
-  horizontalMovement: horizontalMovementType;
+  type: (index: number, op: Operation) => columnType;
+  horizontalMovement: (_idx: number, op: Operation) => horizontalMovementType;
 }
 const DataColumn = ({
   idx,
   toggle,
+  currentOp,
   calculateWidth,
   currentAmount,
   calculateHeight,
@@ -93,8 +101,12 @@ const DataColumn = ({
 }: DataColumnProps) => {
   // const flowingRef = useRef(false);
   const [flowing, setFlowing] = useState(false);
+
+  const w = calculateWidth();
+  const hm = horizontalMovement(idx, currentOp);
+  const t = type(idx, currentOp);
   const assignBg = () => {
-    switch (type) {
+    switch (t) {
       case columnType.Current:
         return "#0987A0";
       case columnType.CompareTo:
@@ -109,7 +121,7 @@ const DataColumn = ({
 
   return (
     <>
-      <HABox w={calculateWidth()} h="100%">
+      <HABox w={w} h="100%" horizontalMovement={hm}>
         <Flex
           alignItems={"flex-end"}
           w="100%"
@@ -132,8 +144,7 @@ const DataColumn = ({
               flowing={flowing}
               idx={idx}
               toggle={toggle}
-              type={type}
-              horizontalMovement={horizontalMovement}
+              type={t}
             ></AnimatedBox>
           </Flex>
           <Box

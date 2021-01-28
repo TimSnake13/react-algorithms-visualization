@@ -10,3 +10,12 @@ export enum horizontalMovementType {
   Left,
   Right,
 }
+
+export type Operation = {
+  current?: number;
+  compareTo?: number;
+  sorted?: number[];
+  moveLeft?: number;
+  moveRight?: number;
+  array: number[];
+};

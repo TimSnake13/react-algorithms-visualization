@@ -3,7 +3,7 @@ import { useSpring, animated, useSprings } from "react-spring";
 import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DataColumn from "./DataColumn";
-import { columnType, horizontalMovementType } from "../../types";
+import { columnType, horizontalMovementType, Operation } from "../../types";
 
 const Sorting = () => {
   const [items, setItems] = useState<number[]>([]);
@@ -67,19 +67,19 @@ const Sorting = () => {
 
       // ******   Run Algorithm   *******
       // console.log("Looping");
-      var nextloop;
+      var nextLoop;
       if (!(idxRef.current + 1 > operations.length - 1)) {
         setOpsIdx((_idx) =>
           _idx + 1 > operations.length - 1 ? _idx : _idx + 1
         );
-        nextloop = setTimeout(runAlgorithm, 1000);
+        nextLoop = setTimeout(runAlgorithm, 1000);
         // console.log("Next");
         // console.log("opsIdx + 1: " + (idxRef.current + 1));
         // console.log("ops.length - 1: " + (operations.length - 1));
       } else {
         // console.log("Stop");
         setLooping(false);
-        clearTimeout(nextloop);
+        clearTimeout(nextLoop);
       }
     }
   };
@@ -144,7 +144,8 @@ const Sorting = () => {
         Algorithms:
         <Button
           onClick={() =>
-            calculateSteps(items).then((res) => setOperations(res))
+            // calculateSteps(items).then((res) => setOperations(res))
+            setOperations(calculateSteps(items))
           }
         >
           Insert Sort
@@ -182,16 +183,19 @@ const Sorting = () => {
             <DataColumn
               key={idx}
               idx={idx}
+              currentOp={operations[opsIdx]}
+              item={item}
               toggle={toggle}
               calculateWidth={calculateWidth}
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
-              item={item}
-              type={assignColumnType(idx, operations[opsIdx])}
-              horizontalMovement={assignHorizontalMovement(
-                idx,
-                operations[opsIdx]
-              )}
+              // type={assignColumnType(idx, operations[opsIdx])}
+              type={assignColumnType}
+              // horizontalMovement={assignHorizontalMovement(
+              //   idx,
+              //   operations[opsIdx]
+              // )}
+              horizontalMovement={assignHorizontalMovement}
             />
           ))}
         </Flex>
@@ -202,16 +206,7 @@ const Sorting = () => {
 
 export default Sorting;
 
-type Operation = {
-  current?: number;
-  compareTo?: number;
-  sorted?: number[];
-  moveLeft?: number;
-  moveRight?: number;
-  array: number[];
-};
-
-async function calculateSteps(items: number[]) {
+function calculateSteps(items: number[]) {
   const ops: Operation[] = [];
   const inputArr = [...items];
   ops.push({ array: [...inputArr] });
