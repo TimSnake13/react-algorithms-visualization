@@ -45,38 +45,23 @@ const Sorting = () => {
     setLooping((current) => !current);
     // loopingRef.current = !loopingRef.current;
   };
-  const [selectedIdx, setSelectedIdx] = useState<Operation[]>([]);
+
   const [opsIdx, setOpsIdx] = useState(0);
   const idxRef = useRef(opsIdx);
   idxRef.current = opsIdx;
-  const ops: Operation[] = [
-    { current: 0, compareTo: 1, sorted: [9] },
-    { current: 0, compareTo: 2, sorted: [9] },
-    { current: 0, compareTo: 3, sorted: [9] },
-    { current: 0, compareTo: 4, sorted: [9] },
-  ];
-  useEffect(() => {
-    console.log(opsIdx);
-    console.log(ops[opsIdx]);
-  }, [opsIdx]);
+  const [operations, setOperations] = useState<Operation[]>([
+    { array: [...items] },
+  ]);
+  // useEffect(() => {
+  //   console.log(opsIdx);
+  //   console.log(operations[opsIdx]);
+  // }, [opsIdx]);
 
   const runAlgorithm = () => {
     // ******   Store Result First   *******
     if (loopingRef.current) {
       // ******   Insertion Sort   *******
-      // const operations = [];
-      // let n = items.length;
-      // for (let i = 1; i < n; i++) {
-      //   // Choosing the first element in our unsorted subarray
-      //   let current = items[i];
-      //   // The last element of our sorted subarray
-      //   let j = i - 1;
-      //   while (j > -1 && current < items[j]) {
-      //     items[j + 1] = items[j];
-      //     j--;
-      //   }
-      //   items[j + 1] = current;
-      // }
+      // calculateSteps(items);
       // * Operations:
       // * 1. Selection
       // * 2. Compare
@@ -86,14 +71,16 @@ const Sorting = () => {
       // ******   Run Algorithm   *******
       // console.log("Looping");
       var nextloop;
-      if (!(idxRef.current + 1 > ops.length - 1)) {
-        setOpsIdx((_idx) => (_idx + 1 > ops.length - 1 ? _idx : _idx + 1));
+      if (!(idxRef.current + 1 > operations.length - 1)) {
+        setOpsIdx((_idx) =>
+          _idx + 1 > operations.length - 1 ? _idx : _idx + 1
+        );
         nextloop = setTimeout(runAlgorithm, 1000);
-        console.log("Next");
-        console.log("opsIdx + 1: " + (idxRef.current + 1));
-        console.log("ops.length - 1: " + (ops.length - 1));
+        // console.log("Next");
+        // console.log("opsIdx + 1: " + (idxRef.current + 1));
+        // console.log("ops.length - 1: " + (operations.length - 1));
       } else {
-        console.log("Stop");
+        // console.log("Stop");
         setLooping(false);
         clearTimeout(nextloop);
       }
@@ -111,10 +98,8 @@ const Sorting = () => {
       case op.compareTo:
         return columnType.CompareTo;
       default:
-        if (
-          op.sorted !== undefined &&
-          op.sorted.find((value) => value === index)
-        ) {
+        if (op.sorted?.find((value) => value === index)) {
+          //FIXME: first column value 0 somehow can not assign a sorted type
           return columnType.Sorted;
         } else return columnType.Default;
     }
@@ -150,6 +135,12 @@ const Sorting = () => {
         <Button onClick={() => handleChangeAmountOfItems(100)}>100</Button>
         {/* <Button onClick={() => handleChangeAmountOfItems(1000)}>1000</Button> */}
       </Box>
+      <Box>
+        Algorithms:
+        <Button onClick={() => setOperations(calculateSteps(items))}>
+          Insert Sort
+        </Button>
+      </Box>
       <Flex minH={200} flexDirection="column">
         <Progress hasStripe value={64} h={5} w={"100%"} />
         <Box mb="5rem">
@@ -162,8 +153,11 @@ const Sorting = () => {
           <Button onClick={() => toggleLoop()}>
             {looping ? "Stop" : "Start"}
           </Button>
+          <Button disabled={opsIdx === 0} onClick={() => setOpsIdx(0)}>
+            Reset
+          </Button>
           <Button
-            disabled={opsIdx + 1 > ops.length - 1}
+            disabled={opsIdx + 1 > operations.length - 1}
             onClick={() => setOpsIdx((state) => state + 1)}
           >
             Next Step
@@ -175,16 +169,16 @@ const Sorting = () => {
           // overflow={"hidden"}
           overflow={sceneReadyRef.current ? "inherit" : "hidden"}
         >
-          {items.map((item, idx) => (
+          {operations[opsIdx].array.map((item, idx) => (
             <DataColumn
-              key={idx}
+              key={item}
               idx={idx}
               toggle={toggle}
               calculateWidth={calculateWidth}
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
               item={item}
-              type={assignColumnType(idx, ops[opsIdx])}
+              type={assignColumnType(idx, operations[opsIdx])}
             />
           ))}
         </Flex>
@@ -193,10 +187,43 @@ const Sorting = () => {
   );
 };
 
+export default Sorting;
+
 type Operation = {
-  current: number;
-  compareTo: number;
+  current?: number;
+  compareTo?: number;
   sorted?: number[];
+  array: number[];
 };
 
-export default Sorting;
+function calculateSteps(items: number[]) {
+  const ops: Operation[] = [];
+  const inputArr = [...items];
+  ops.push({ array: [...inputArr] });
+
+  let n = inputArr.length;
+  for (let i = 1; i < n; i++) {
+    // Choosing the first element in our unsorted subarray
+    let current = inputArr[i];
+    ops.push({ current: i, array: [...inputArr] });
+    // The last element of our sorted subarray
+    let j = i - 1;
+    ops.push({ current: i, compareTo: j, array: [...inputArr] });
+    while (j > -1 && current < inputArr[j]) {
+      inputArr[j + 1] = inputArr[j];
+      // Move sorted element to the right by 1
+      inputArr[j] = current;
+      ops.push({ current: j, compareTo: j, array: [...inputArr] });
+      j--;
+    }
+    inputArr[j + 1] = current;
+    ops.push({ current: i, array: [...inputArr] });
+  }
+  // All sorted
+  const sorted = [];
+  for (let i = 0; i < n; i++) {
+    sorted.push(i);
+  }
+  ops.push({ sorted, array: [...inputArr] });
+  return ops;
+}

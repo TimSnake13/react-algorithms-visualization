@@ -8,15 +8,16 @@ interface BoxProps {
   bg: string;
   flowing: boolean;
   toggle: boolean;
+  type: columnType;
 }
 
-const AnimatedBox = ({ idx, bg, flowing, toggle }: BoxProps) => {
+const AnimatedBox = ({ idx, bg, flowing, toggle, type }: BoxProps) => {
   const [delay, setDelay] = useState(idx * 25);
   const AnimatedBox = animated(Box);
   const props = useSpring({
     height: "100%",
     transform: `perspective(600px) translateY(${
-      toggle ? "0%" : "100%"
+      type === columnType.Current ? "120%" : "0%"
     }) scale(${flowing ? 1.2 : 1})`,
     delay: delay,
     backgroundColor: bg,
@@ -106,6 +107,7 @@ const DataColumn = ({
               flowing={flowing}
               idx={idx}
               toggle={toggle}
+              type={type}
             ></AnimatedBox>
           </Flex>
           <Box
