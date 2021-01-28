@@ -11,22 +11,22 @@ interface BoxProps {
 }
 
 const AnimatedBox = ({ idx, bg, flowing, toggle }: BoxProps) => {
+  const [delay, setDelay] = useState(idx * 25);
   const AnimatedBox = animated(Box);
   const props = useSpring({
     height: "100%",
     transform: `perspective(600px) translateY(${
       toggle ? "0%" : "100%"
     }) scale(${flowing ? 1.2 : 1})`,
-    delay: idx * 25,
+    delay: delay,
     backgroundColor: bg,
 
     boxShadow: flowing
       ? "0px 2px 40px #00000020, 0px 2px 5px #00000030"
       : "0px 0px 0px #00000020, 0px 0px 0px #00000030",
-    // boxShadow:
-    //   "0px 2px " +
-    //   `${flowing ? "40px" : "20px"}` +
-    //   " #00000020, 0px 2px 5px #00000030",
+    onRest: () => {
+      setDelay(0);
+    },
   });
 
   return (

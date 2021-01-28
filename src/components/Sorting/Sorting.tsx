@@ -43,39 +43,68 @@ const Sorting = () => {
 
   const toggleLoop = () => {
     setLooping((current) => !current);
+    // loopingRef.current = !loopingRef.current;
   };
   const [selectedIdx, setSelectedIdx] = useState<Operation[]>([]);
-  const runAlgorithm = useCallback(() => {
-    // Using ref = always up to date
-    if (loopingRef.current) {
-      // ******   Run Algorithm   *******
-      console.log("Looping");
+  const [opsIdx, setOpsIdx] = useState(0);
+  const idxRef = useRef(opsIdx);
+  idxRef.current = opsIdx;
+  const ops: Operation[] = [
+    { current: 0, compareTo: 1, sorted: [9] },
+    { current: 0, compareTo: 2, sorted: [9] },
+    { current: 0, compareTo: 3, sorted: [9] },
+    { current: 0, compareTo: 4, sorted: [9] },
+  ];
+  useEffect(() => {
+    console.log(opsIdx);
+    console.log(ops[opsIdx]);
+  }, [opsIdx]);
 
+  const runAlgorithm = () => {
+    // ******   Store Result First   *******
+    if (loopingRef.current) {
       // ******   Insertion Sort   *******
-      const operations = [];
-      let n = items.length;
-      for (let i = 1; i < n; i++) {
-        // Choosing the first element in our unsorted subarray
-        let current = items[i];
-        // The last element of our sorted subarray
-        let j = i - 1;
-        while (j > -1 && current < items[j]) {
-          items[j + 1] = items[j];
-          j--;
-        }
-        items[j + 1] = current;
-      }
+      // const operations = [];
+      // let n = items.length;
+      // for (let i = 1; i < n; i++) {
+      //   // Choosing the first element in our unsorted subarray
+      //   let current = items[i];
+      //   // The last element of our sorted subarray
+      //   let j = i - 1;
+      //   while (j > -1 && current < items[j]) {
+      //     items[j + 1] = items[j];
+      //     j--;
+      //   }
+      //   items[j + 1] = current;
+      // }
       // * Operations:
       // * 1. Selection
       // * 2. Compare
       // * 3. Switch position or not
       // * Repeat 1.
+
+      // ******   Run Algorithm   *******
+      // console.log("Looping");
+      var nextloop;
+      if (!(idxRef.current + 1 > ops.length - 1)) {
+        setOpsIdx((_idx) => (_idx + 1 > ops.length - 1 ? _idx : _idx + 1));
+        nextloop = setTimeout(runAlgorithm, 1000);
+        console.log("Next");
+        console.log("opsIdx + 1: " + (idxRef.current + 1));
+        console.log("ops.length - 1: " + (ops.length - 1));
+      } else {
+        console.log("Stop");
+        setLooping(false);
+        clearTimeout(nextloop);
+      }
     }
+  };
 
-    setTimeout(runAlgorithm, 1000);
-  }, []);
+  useEffect(() => {
+    if (looping) setTimeout(runAlgorithm, 1000);
+  }, [looping]);
 
-  const assignColor = (index: number, op: Operation) => {
+  const assignColumnType = (index: number, op: Operation) => {
     switch (index) {
       case op.current:
         return columnType.Current;
@@ -91,24 +120,12 @@ const Sorting = () => {
     }
   };
 
-  const [opsIdx, setOpsIdx] = useState(0);
-  const ops: Operation[] = [
-    { current: 0, compareTo: 1, sorted: [9] },
-    { current: 0, compareTo: 2, sorted: [9] },
-  ];
-  useEffect(() => {
-    console.log(opsIdx);
-    console.log(ops[opsIdx]);
-  }, [opsIdx]);
-
   useEffect(() => {
     handleChangeAmountOfItems(10);
     setTimeout(() => {
       setToggle(true);
-      // setSceneReady(true);
       sceneReadyRef.current = !sceneReadyRef.current;
     }, 1000);
-    runAlgorithm();
   }, []);
 
   // const [props, set] = useSpring(() => ({
@@ -146,7 +163,7 @@ const Sorting = () => {
             {looping ? "Stop" : "Start"}
           </Button>
           <Button
-            disabled={opsIdx + 1 > ops.length}
+            disabled={opsIdx + 1 > ops.length - 1}
             onClick={() => setOpsIdx((state) => state + 1)}
           >
             Next Step
@@ -167,7 +184,7 @@ const Sorting = () => {
               currentAmount={currentAmount}
               calculateHeight={calculateHeight}
               item={item}
-              type={assignColor(idx, ops[opsIdx])}
+              type={assignColumnType(idx, ops[opsIdx])}
             />
           ))}
         </Flex>
