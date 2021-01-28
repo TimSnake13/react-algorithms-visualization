@@ -2,11 +2,10 @@ import * as React from "react";
 import { useSpring, animated, useSprings } from "react-spring";
 import { Box, Button, Flex, Progress } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import DataColumn, { columnType } from "./DataColumn";
+import DataColumn from "./DataColumn";
+import { columnType, horizontalMovementType } from "../../types";
 
 const Sorting = () => {
-  // const [sceneReady, setSceneReady] = useState(false);
-  const sceneReadyRef = useRef(false);
   const [items, setItems] = useState<number[]>([]);
   const [currentAmount, setCurrentAmount] = useState(10);
   const [max, setMax] = useState(100);
@@ -49,9 +48,7 @@ const Sorting = () => {
   const [opsIdx, setOpsIdx] = useState(0);
   const idxRef = useRef(opsIdx);
   idxRef.current = opsIdx;
-  const [operations, setOperations] = useState<Operation[]>([
-    { array: [...items] },
-  ]);
+  const [operations, setOperations] = useState<Operation[]>([]);
   // useEffect(() => {
   //   console.log(opsIdx);
   //   console.log(operations[opsIdx]);
@@ -105,11 +102,14 @@ const Sorting = () => {
     }
   };
 
+  const [toggle, setToggle] = useState(false);
+  const sceneReadyRef = useRef(toggle);
+  sceneReadyRef.current = toggle;
   useEffect(() => {
     handleChangeAmountOfItems(10);
     setTimeout(() => {
       setToggle(true);
-      sceneReadyRef.current = !sceneReadyRef.current;
+      // sceneReadyRef.current = !sceneReadyRef.current;
     }, 1000);
   }, []);
 
@@ -119,7 +119,12 @@ const Sorting = () => {
   //   },
   //   from: { height: "0px" },
   // }));
-  const [toggle, setToggle] = useState(false);
+
+  const assignHorizontalMovement = (_idx: number, op: Operation) => {
+    if (op.moveLeft === _idx) return horizontalMovementType.Left;
+    else if (op.moveRight === _idx) return horizontalMovementType.Right;
+    else return horizontalMovementType.None;
+  };
 
   return (
     <Box px={"8rem"}>
@@ -127,7 +132,7 @@ const Sorting = () => {
         <Button onClick={() => handleChangeAmountOfItems()}>
           Randomize Array
         </Button>
-        <Button onClick={() => setToggle((current) => !current)}>Toggle</Button>
+        <Button onClick={() => setToggle((state) => !state)}>Toggle</Button>
       </Box>
       <Box>
         Set Number:
@@ -137,7 +142,11 @@ const Sorting = () => {
       </Box>
       <Box>
         Algorithms:
-        <Button onClick={() => setOperations(calculateSteps(items))}>
+        <Button
+          onClick={() =>
+            calculateSteps(items).then((res) => setOperations(res))
+          }
+        >
           Insert Sort
         </Button>
       </Box>
@@ -169,9 +178,9 @@ const Sorting = () => {
           // overflow={"hidden"}
           overflow={sceneReadyRef.current ? "inherit" : "hidden"}
         >
-          {operations[opsIdx].array.map((item, idx) => (
+          {operations[opsIdx]?.array.map((item, idx) => (
             <DataColumn
-              key={item}
+              key={idx}
               idx={idx}
               toggle={toggle}
               calculateWidth={calculateWidth}
@@ -179,6 +188,10 @@ const Sorting = () => {
               calculateHeight={calculateHeight}
               item={item}
               type={assignColumnType(idx, operations[opsIdx])}
+              horizontalMovement={assignHorizontalMovement(
+                idx,
+                operations[opsIdx]
+              )}
             />
           ))}
         </Flex>
@@ -193,10 +206,12 @@ type Operation = {
   current?: number;
   compareTo?: number;
   sorted?: number[];
+  moveLeft?: number;
+  moveRight?: number;
   array: number[];
 };
 
-function calculateSteps(items: number[]) {
+async function calculateSteps(items: number[]) {
   const ops: Operation[] = [];
   const inputArr = [...items];
   ops.push({ array: [...inputArr] });
@@ -213,7 +228,14 @@ function calculateSteps(items: number[]) {
       inputArr[j + 1] = inputArr[j];
       // Move sorted element to the right by 1
       inputArr[j] = current;
-      ops.push({ current: j, compareTo: j, array: [...inputArr] });
+      ops.push({
+        current: i,
+        compareTo: j,
+        moveLeft: i,
+        moveRight: j,
+        array: [...inputArr],
+      });
+      ops.push({ current: j, compareTo: j - 1, array: [...inputArr] });
       j--;
     }
     inputArr[j + 1] = current;

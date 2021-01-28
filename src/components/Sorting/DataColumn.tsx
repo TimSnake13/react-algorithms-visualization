@@ -2,6 +2,7 @@ import { useSpring, animated, interpolate } from "react-spring";
 import * as React from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useRef, useState } from "react";
+import { columnType, horizontalMovementType } from "../../types";
 
 interface BoxProps {
   idx: number;
@@ -9,46 +10,68 @@ interface BoxProps {
   flowing: boolean;
   toggle: boolean;
   type: columnType;
+  horizontalMovement: horizontalMovementType;
 }
 
-const AnimatedBox = ({ idx, bg, flowing, toggle, type }: BoxProps) => {
+const AnimatedBox = ({
+  idx,
+  bg,
+  flowing,
+  toggle,
+  type,
+  horizontalMovement,
+}: BoxProps) => {
   const [delay, setDelay] = useState(idx * 25);
-  const AnimatedBox = animated(Box);
+  let skipNextAnimation = false;
+  const [skip, setSkip] = useState(false);
+  const assignHorizontalMovement = () => {
+    switch (horizontalMovement) {
+      case horizontalMovementType.Left:
+        skipNextAnimation = true;
+        return "-150%";
+      case horizontalMovementType.Right:
+        skipNextAnimation = true;
+        return "150%";
+      default:
+        skipNextAnimation = false;
+        return "0%";
+    }
+  };
   const props = useSpring({
+    width: "100%",
     height: "100%",
-    transform: `perspective(600px) translateY(${
-      type === columnType.Current ? "120%" : "0%"
-    }) scale(${flowing ? 1.2 : 1})`,
+    transform: `perspective(600px) translate3d(${assignHorizontalMovement()},
+    ${type === columnType.Current ? "120%" : "0%"}, 0) 
+    scale(${flowing ? 1.2 : 1})`,
     delay: delay,
     backgroundColor: bg,
-
     boxShadow: flowing
       ? "0px 2px 40px #00000020, 0px 2px 5px #00000030"
       : "0px 0px 0px #00000020, 0px 0px 0px #00000030",
     onRest: () => {
       setDelay(0);
+      if (skipNextAnimation) setSkip(true);
+      else setSkip(false);
     },
+    immediate: skip,
   });
 
-  return (
-    <AnimatedBox
-      style={props}
-      w="100%"
-      //   bg="teal.200"
-      //   bg={assignBg()}
-      //   boxShadow="0px 2px 40px #00000020, 0px 2px 5px #00000030"
-    ></AnimatedBox>
-  );
+  return <animated.div style={props} />;
 };
 
-export enum columnType {
-  Current,
-  CompareTo,
-  Sorted,
-  Default,
+interface HABoxProps {
+  children: any;
+  w: string;
+  h: string;
 }
 
-interface Props {
+const HABox = ({ children, w, h }: HABoxProps) => {
+  // const HABox = animated(Box);
+
+  return <animated.div style={{ width: w, height: h }} children={children} />;
+};
+
+interface DataColumnProps {
   idx: number;
   toggle: boolean;
   calculateWidth: () => string;
@@ -56,6 +79,7 @@ interface Props {
   calculateHeight: (value: number) => string;
   item: number;
   type: columnType;
+  horizontalMovement: horizontalMovementType;
 }
 const DataColumn = ({
   idx,
@@ -65,7 +89,8 @@ const DataColumn = ({
   calculateHeight,
   item,
   type,
-}: Props) => {
+  horizontalMovement,
+}: DataColumnProps) => {
   // const flowingRef = useRef(false);
   const [flowing, setFlowing] = useState(false);
   const assignBg = () => {
@@ -84,7 +109,7 @@ const DataColumn = ({
 
   return (
     <>
-      <Box w={calculateWidth()} h="100%">
+      <HABox w={calculateWidth()} h="100%">
         <Flex
           alignItems={"flex-end"}
           w="100%"
@@ -108,6 +133,7 @@ const DataColumn = ({
               idx={idx}
               toggle={toggle}
               type={type}
+              horizontalMovement={horizontalMovement}
             ></AnimatedBox>
           </Flex>
           <Box
@@ -124,7 +150,7 @@ const DataColumn = ({
             {currentAmount < 50 && item}
           </Box>
         </Flex>
-      </Box>
+      </HABox>
     </>
   );
 };
